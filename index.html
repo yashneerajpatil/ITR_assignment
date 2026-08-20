@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>3D Rigid Body Rotation Visualizer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="header-titles">
+      <h1>3D RIGID BODY ROTATION VISUALIZER</h1>
+      <p>Interactive visualization of 3D coordinate rotations &mdash; ZYX Euler convention</p>
+    </div>
+    <div class="header-status">
+      <div class="status-chip">
+        <span class="dot dot-ref"></span> REFERENCE &middot; FIXED
+      </div>
+      <div class="status-chip">
+        <span class="dot dot-body"></span> BODY &middot; ROTATABLE
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+
+    <section class="viewport-panel">
+      <div id="canvas-container"></div>
+
+      <div class="viewport-overlay top-left">
+        <div class="legend">
+          <div class="legend-title">FRAME LEGEND</div>
+          <div class="legend-row"><span class="swatch swatch-ref-x"></span> X &nbsp;<span class="swatch swatch-ref-y"></span> Y &nbsp;<span class="swatch swatch-ref-z"></span> Z <span class="legend-tag">Reference (fixed)</span></div>
+          <div class="legend-row"><span class="swatch swatch-body-x"></span> X<sub>B</sub> <span class="swatch swatch-body-y"></span> Y<sub>B</sub> <span class="swatch swatch-body-z"></span> Z<sub>B</sub> <span class="legend-tag body-tag">Body (rotatable)</span></div>
+        </div>
+      </div>
+
+      <div class="viewport-overlay bottom-left">
+        <div class="orientation-readout">
+          <div class="readout-row"><span class="readout-label">Roll</span><span id="readout-roll" class="readout-value">0.0&deg;</span></div>
+          <div class="readout-row"><span class="readout-label">Pitch</span><span id="readout-pitch" class="readout-value">0.0&deg;</span></div>
+          <div class="readout-row"><span class="readout-label">Yaw</span><span id="readout-yaw" class="readout-value">0.0&deg;</span></div>
+          <div class="readout-divider"></div>
+          <div class="readout-row"><span class="readout-label">Order</span><span class="readout-value readout-order">Z &rarr; Y &rarr; X</span></div>
+        </div>
+      </div>
+
+      <div class="viewport-overlay bottom-right">
+        <div class="camera-hint">drag to orbit &middot; scroll to zoom &middot; right-drag to pan</div>
+      </div>
+    </section>
+
+    <aside class="control-panel">
+
+      <div class="panel-block">
+        <h2 class="panel-title">Rotation Controls</h2>
+
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <label for="roll-slider">Roll (&phi;) &mdash; rotation about X</label>
+            <span id="roll-value" class="slider-value">0.0&deg;</span>
+          </div>
+          <input type="range" id="roll-slider" min="-180" max="180" step="0.1" value="0" />
+          <div class="slider-range-caps"><span>-180&deg;</span><span>180&deg;</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <label for="pitch-slider">Pitch (&theta;) &mdash; rotation about Y</label>
+            <span id="pitch-value" class="slider-value">0.0&deg;</span>
+          </div>
+          <input type="range" id="pitch-slider" min="-90" max="90" step="0.1" value="0" />
+          <div class="slider-range-caps"><span>-90&deg;</span><span>90&deg;</span></div>
+        </div>
+
+        <div class="slider-group">
+          <div class="slider-label-row">
+            <label for="yaw-slider">Yaw (&psi;) &mdash; rotation about Z</label>
+            <span id="yaw-value" class="slider-value">0.0&deg;</span>
+          </div>
+          <input type="range" id="yaw-slider" min="-180" max="180" step="0.1" value="0" />
+          <div class="slider-range-caps"><span>-180&deg;</span><span>180&deg;</span></div>
+        </div>
+
+        <div class="convention-note">
+          <span class="convention-label">Convention</span>
+          <span class="convention-eq">R = R<sub>z</sub>(&psi;) R<sub>y</sub>(&theta;) R<sub>x</sub>(&phi;) &nbsp;&mdash;&nbsp; ZYX Euler angles</span>
+        </div>
+      </div>
+
+      <div class="panel-block">
+        <h2 class="panel-title">Rotation Matrix R</h2>
+        <div class="matrix-display" id="matrix-display">
+          <div class="matrix-bracket left"></div>
+          <div class="matrix-grid" id="matrix-grid">
+            <!-- 9 cells injected by JS -->
+          </div>
+          <div class="matrix-bracket right"></div>
+        </div>
+      </div>
+
+      <button id="reset-btn" class="reset-button">RESET</button>
+
+      <div class="panel-block info-block">
+        <h2 class="panel-title small">Reference</h2>
+        <dl class="info-list">
+          <dt>Convention</dt>
+          <dd>ZYX Euler Angles</dd>
+          <dt>Equation</dt>
+          <dd class="mono-small">R = Rz(&psi;)&middot;Ry(&theta;)&middot;Rx(&phi;)</dd>
+          <dt>&phi; Roll</dt>
+          <dd>rotation about X</dd>
+          <dt>&theta; Pitch</dt>
+          <dd>rotation about Y</dd>
+          <dt>&psi; Yaw</dt>
+          <dd>rotation about Z</dd>
+          <dt>Reference frame</dt>
+          <dd>fixed / world frame</dd>
+          <dt>Body frame</dt>
+          <dd>rotates with the rigid body</dd>
+        </dl>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <footer class="app-footer">
+    3D Rigid Body Rotation Visualizer &middot; Three.js &middot; ZYX Euler Angle Rotation Matrix
+  </footer>
+
+  <!-- Three.js via CDN (import map) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="script.js"></script>
+</body>
+</html>
